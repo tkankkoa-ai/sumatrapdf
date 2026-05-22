@@ -1,35 +1,43 @@
 name: Build
+
 on:
   push:
   pull_request:
-  repository_dispatch:
-    types: [build-pre-rel, build-ramicro-pre-rel]
+
 jobs:
   build:
-    name: Build
     runs-on: windows-latest
+
     steps:
-      - name: Set up Go
-        uses: actions/setup-go@v2
+      - name: Setup Go
+        uses: actions/setup-go@v4
         with:
           go-version: 1.16
 
-      - name: Check out source code
-        uses: actions/checkout@v2
+      - name: Checkout source code
+        uses: actions/checkout@v4
         with:
-          # needed to calc build number via git log --oneline
           fetch-depth: 0
 
-      - name: Build
-        env:
-          CERT_PWD: ${{ secrets.CERT_PWD }}
-        run: .\doit.bat -ci
+      # FIX LỖI getGitLinearVersion (repo fork không đủ commit)
+      - name: Patch git version check
+        shell: powershell
+        run: |
+          (Get-Content do\git.go) `
+            -replace 'if \(n < 10000\) \{ panic\("getGitLinearVersion: n is %d \(should be > 10000\)", n\) \}', 'if (n < 10000) { return 10000 + n }' `
+            | Set-Content do\git.go
 
-      # a separate step from -ci to make logs easier to read
-      - name: Upload to s3 etc.
-        env:
-          AWS_SECRET: ${{ secrets.AWS_SECRET }}
-          AWS_ACCESS: ${{ secrets.AWS_ACCESS }}
-          SPACES_KEY: ${{ secrets.SPACES_KEY }}
-          SPACES_SECRET: ${{ secrets.SPACES_SECRET }}
-        run: .\doit.bat -ci-upload
+      - name: Build
+        shell: cmd
+        run: doit.bat -ci
+
+      # LẤY FILE BUILD RA UPLOAD
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sumatrapdf-build
+          path: |
+            **/*.exe
+            **/Release/**
+            **/Debug/**
+            **/out/**
