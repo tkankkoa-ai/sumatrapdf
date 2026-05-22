@@ -7,7 +7,13 @@ import (
 )
 
 func getGitLinearVersionMust() int {
-	return 11000
+	out := runExeMust("git", "log", "--oneline")
+	lines := toTrimmedLines(out)
+	// we add 1000 to create a version that is larger than the svn version
+	// from the time we used svn
+	n := len(lines) + 1000
+	u.PanicIf(n < 10000, "getGitLinearVersion: n is %d (should be > 10000)", n)
+	return n
 }
 
 func getGitSha1Must() string {
