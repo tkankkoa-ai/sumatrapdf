@@ -9,35 +9,21 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Setup Go
-        uses: actions/setup-go@v4
+      - uses: actions/setup-go@v4
         with:
           go-version: 1.16
 
-      - name: Checkout source code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      # FIX LỖI getGitLinearVersion (repo fork không đủ commit)
-      - name: Patch git version check
-        shell: powershell
-        run: |
-          (Get-Content do\git.go) `
-            -replace 'if \(n < 10000\) \{ panic\("getGitLinearVersion: n is %d \(should be > 10000\)", n\) \}', 'if (n < 10000) { return 10000 + n }' `
-            | Set-Content do\git.go
 
       - name: Build
         shell: cmd
         run: doit.bat -ci
 
-      # LẤY FILE BUILD RA UPLOAD
-      - name: Upload build artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sumatrapdf-build
+          name: sumatrapdf
           path: |
             **/*.exe
-            **/Release/**
-            **/Debug/**
-            **/out/**
