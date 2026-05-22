@@ -1,6 +1,6 @@
 ![](https://github.com/sumatrapdfreader/sumatrapdf/workflows/Build/badge.svg)
 
-## SumatraPDF Reader
+## SumatraPDF Reader 
 
 SumatraPDF is a multi-format (PDF, EPUB, MOBI, FB2, CHM, XPS, DjVu) reader
 for Windows under (A)GPLv3 license, with some code under BSD license (see
